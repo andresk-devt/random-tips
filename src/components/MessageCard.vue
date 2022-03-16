@@ -1,8 +1,11 @@
 <template>
   <div class="message-card">
+    <div class="loading" v-if="loading">
+      <LoadingSpinner />
+    </div>
     <div class="advice-id">ADVICE # {{ tipID }}</div>
-    <div class="advice-message">
-      {{ `"${tipMessage}"` }}
+    <div class="advice-message" v-if="!loading">
+      {{ `${tipMessage}` }}
     </div>
     <img
       class="separator"
@@ -17,18 +20,25 @@
 
 <script>
 import { mapGetters } from "vuex";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 export default {
+  components: {
+    LoadingSpinner,
+  },
   data() {
     return {
-      tipID: null,
-      tipMessage: null,
+      tipID: "",
+      tipMessage: "",
+      loading: true,
     };
   },
   async beforeCreate() {
+    this.loading = true;
     await this.$store.dispatch("getAdvicePeticion");
     this.tipID = this.advice.id;
     this.tipMessage = this.advice.advice;
+    this.loading = false;
   },
   computed: {
     ...mapGetters({
@@ -36,16 +46,26 @@ export default {
     }),
   },
   methods: {
-    request() {
-      this.$store.dispatch("getAdvicePeticion");
+    async request() {
+      this.loading = true;
+      await this.$store.dispatch("getAdvicePeticion");
       this.tipID = this.advice.id;
       this.tipMessage = this.advice.advice;
+      this.loading = false;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.loading {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
 .message-card {
   position: relative;
   padding: 5px;
